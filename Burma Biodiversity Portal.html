@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Burma Biodiversity Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css" />
+  <script src="data/birds.js"></script>
+  <script src="data/fishes.js"></script>
+  <script src="data/plants.js"></script>
+  <script src="lang/en.json" type="application/json"></script>
+  <script src="lang/mm.json" type="application/json"></script>
+  <script src="locales.js"></script>
+  <script src="script.js"></script>
+  <style>
+    .tab { cursor: pointer; padding: 0.5rem 1rem; }
+    .tab-active { border-bottom: 2px solid #059669; color: #059669; font-weight: 600; }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+  <div class="container mx-auto p-6">
+    <header class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-emerald-700" id="title">Burma Biodiversity Portal</h1>
+      <p class="text-gray-600" id="subtitle">Discover Birds, Fishes, and Plants of Burma</p>
+    </header>
+
+    <!-- Language Switcher -->
+    <div class="text-center mb-6">
+      <button onclick="setLanguage('en')" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">English</button>
+      <button onclick="setLanguage('mm')" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 ml-2">မြန်မာ</button>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="flex justify-center mb-4">
+      <div class="tab tab-active" onclick="showCategory('birds')" id="tab-birds">Birds</div>
+      <div class="tab ml-4" onclick="showCategory('fishes')" id="tab-fishes">Fishes</div>
+      <div class="tab ml-4" onclick="showCategory('plants')" id="tab-plants">Plants</div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mb-6 max-w-xl mx-auto">
+      <input type="text" id="search-input" placeholder="Search..." class="w-full p-3 rounded border shadow focus:outline-none" oninput="debouncedSearch()" />
+    </div>
+
+    <!-- Results Grid -->
+    <div id="result-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+
+    <div id="no-results" class="hidden text-center py-10 text-gray-500 text-lg">No items found.</div>
+  </div>
+
+  <script>
+    let currentCategory = 'birds';
+    let currentData = birdData;
+    let language = 'en';
+    let debounceTimeout;
+
+    function renderGrid(data) {
+      const grid = document.getElementById('result-grid');
+      grid.innerHTML = '';
+      if (data.length === 0) {
+        document.getElementById('no-results').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('no-results').classList.add('hidden');
+      data.forEach(item => {
+        grid.innerHTML += `
+          <div class="bg-white rounded shadow p-4">
+            <img src="${item.photo_url}" class="w-full h-48 object-cover rounded" alt="${item.name}" />
+            <h3 class="text-xl font-bold text-emerald-700 mt-2">${item.name}</h3>
+            <p class="text-sm text-gray-500 italic">${item.scientific_name}</p>
+            <p class="text-sm mt-2">${item.description}</p>
+          </div>
+        `;
+      });
+    }
+
+    function showCategory(cat) {
+      currentCategory = cat;
+      currentData = cat === 'birds' ? birdData : cat === 'fishes' ? fishData : plantData;
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('tab-active'));
+      document.getElementById(`tab-${cat}`).classList.add('tab-active');
+      renderGrid(currentData);
+    }
+
+    function debouncedSearch() {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(handleSearch, 300);
+    }
+
+    function handleSearch() {
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      const filtered = currentData.filter(item => item.name.toLowerCase().includes(searchTerm));
+      renderGrid(filtered);
+    }
+
+    async function setLanguage(lang) {
+      language = lang;
+      const langData = await fetch(`lang/${lang}.json`).then(res => res.json());
+      document.getElementById('title').innerText = langData.title;
+      document.getElementById('subtitle').innerText = langData.subtitle;
+      document.getElementById('tab-birds').innerText = langData.birds;
+      document.getElementById('tab-fishes').innerText = langData.fishes;
+      document.getElementById('tab-plants').innerText = langData.plants;
+      document.getElementById('search-input').placeholder = langData.search;
+    }
+
+    window.onload = () => {
+      renderGrid(currentData);
+    };
+  </script>
+</body>
+</html>

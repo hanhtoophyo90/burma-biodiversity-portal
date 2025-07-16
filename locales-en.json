@@ -1,0 +1,14 @@
+{
+  "title": "Burma Biodiversity Portal",
+  "subtitle": "Explore native birds, fishes, and plants of Burma",
+  "search_placeholder": "Search by name...",
+  "no_results_title": "No Species Found",
+  "no_results_subtitle": "Try a different search term.",
+  "birds_tab": "Birds",
+  "fish_tab": "Fishes",
+  "plants_tab": "Plants",
+  "habitat": "Habitat",
+  "status": "Status",
+  "photo_by": "Photo by",
+  "flip": "Click to flip"
+}
